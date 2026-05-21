@@ -117,12 +117,15 @@ function createDeck() {
     
     for (let deckNum = 0; deckNum < 2; deckNum++) {
         for (const suit of suits) {
-            for (let num = 2; num <= 10; num++) {
+            // Only cards 9-10 (numbered cards)
+            for (let num = 9; num <= 10; num++) {
                 deck.push({ suit, value: num, display: num });
             }
+            // Face cards: J, Q, K (all worth 10)
             deck.push({ suit, value: 10, display: 'J' });
             deck.push({ suit, value: 10, display: 'Q' });
             deck.push({ suit, value: 10, display: 'K' });
+            // Ace (worth 11)
             deck.push({ suit, value: 11, display: 'A' });
         }
     }
