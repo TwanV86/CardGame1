@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaartspel 31 - LOTR Editie</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="startScreen" class="screen active">
+        <div class="start-container">
+            <h1>⚔️ KAARTSPEL 31 ⚔️</h1>
+            <p class="subtitle">Een LOTR Avontuur</p>
+            
+            <div class="start-form">
+                <div class="form-group">
+                    <label for="difficulty">Kies moeilijkheidsgraad:</label>
+                    <select id="difficulty">
+                        <option value="easy">👶 Kind</option>
+                        <option value="hard">🧙 Volwassene</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="rounds">Hoeveel rondes wil je spelen?</label>
+                    <input type="number" id="rounds" min="1" max="10" value="3">
+                </div>
+
+                <button id="startBtn" class="btn btn-primary">Spel Starten</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameScreen" class="screen">
+        <div class="game-container">
+            <!-- Linkerzijde: Spelerinfo -->
+            <div class="left-panel">
+                <div class="panel-section scores">
+                    <h3>📊 SCORES</h3>
+                    <div class="score-item">
+                        <span>Jij:</span>
+                        <span id="playerScore">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span>AI:</span>
+                        <span id="aiScore">0</span>
+                    </div>
+                </div>
+
+                <div class="panel-section round-info">
+                    <h3>🎯 RONDE INFO</h3>
+                    <div class="info-item">
+                        Ronde: <span id="currentRound">1</span>/<span id="totalRounds">3</span>
+                    </div>
+                    <div class="info-item">
+                        Status: <span id="gameStatus">Jouw beurt</span>
+                    </div>
+                    <div class="info-item">
+                        Jouw punten: <span id="playerRoundScore">0</span>
+                    </div>
+                </div>
+
+                <div class="panel-section history">
+                    <div class="history-header">
+                        <h3>📜 GESCHIEDENIS</h3>
+                        <button id="toggleHistory" class="btn-toggle">▼</button>
+                    </div>
+                    <div id="historyContent" class="history-content hidden">
+                        <div id="historyList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middelen: Spelbord -->
+            <div class="game-board">
+                <h2 class="game-title">RIVENDELL TAFEL</h2>
+
+                <!-- AI Speler -->
+                <div class="player-section ai-section">
+                    <h3>🤖 AI Tegenstander</h3>
+                    <div class="hand ai-hand">
+                        <div class="card back" id="aiCard1"></div>
+                        <div class="card back" id="aiCard2"></div>
+                        <div class="card back" id="aiCard3"></div>
+                    </div>
+                </div>
+
+                <!-- Midden: Deck en Discard -->
+                <div class="middle-section">
+                    <div class="deck-area">
+                        <div id="deck" class="card deck-card">
+                            <div class="card-back"></div>
+                        </div>
+                        <p class="deck-label">DECK</p>
+                        <p class="card-count" id="deckCount">0</p>
+                    </div>
+
+                    <div class="discard-area">
+                        <div id="discardPile" class="card">
+                            <div class="card-inner">?</div>
+                        </div>
+                        <p class="discard-label">DISCARD</p>
+                    </div>
+                </div>
+
+                <!-- Speler -->
+                <div class="player-section player-section-main">
+                    <h3>⚔️ Jij</h3>
+                    <div class="hand player-hand">
+                        <div class="card playable" id="playerCard0"></div>
+                        <div class="card playable" id="playerCard1"></div>
+                        <div class="card playable" id="playerCard2"></div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="drawFromDeck" class="btn btn-secondary">📥 Pak van Deck</button>
+                        <button id="drawFromDiscard" class="btn btn-secondary">📤 Pak van Discard</button>
+                        <button id="knockBtn" class="btn btn-danger">🔔 KLOP!</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rechtszijde: Controls -->
+            <div class="right-panel">
+                <div class="panel-section controls">
+                    <h3>⚙️ BESTURING</h3>
+                    <div class="difficulty-display">
+                        <p>Moeilijkheid: <span id="difficultyDisplay">-</span></p>
+                    </div>
+                    <button id="endGameBtn" class="btn btn-warning">⛔ Spel Stoppen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="endScreen" class="screen">
+        <div class="end-container">
+            <h1 id="endTitle">🏆 RONDE VOORBIJ 🏆</h1>
+            <div class="end-results">
+                <div class="result-item">
+                    <p>Jij:</p>
+                    <p id="endPlayerScore" class="score-big">0</p>
+                </div>
+                <div class="result-item">
+                    <p>AI:</p>
+                    <p id="endAiScore" class="score-big">0</p>
+                </div>
+            </div>
+            <p id="endMessage" class="end-message"></p>
+            <div class="end-buttons">
+                <button id="nextRoundBtn" class="btn btn-primary">Volgende Ronde ➜</button>
+                <button id="backToMenuBtn" class="btn btn-secondary">Terug naar Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
