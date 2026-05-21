@@ -13,36 +13,6 @@ const SUIT_COLORS = {
     spades: '#000000'
 };
 
-const SUIT_NAMES = {
-    hearts: 'Harten',
-    diamonds: 'Ruiten',
-    clubs: 'Klaveren',
-    spades: 'Schoppen'
-};
-
-const CHARACTERS = {
-    hearts: {
-        ace: 'Gandalf',
-        king: 'Aragorn',
-        queen: 'Arwen'
-    },
-    diamonds: {
-        ace: 'Radagast',
-        king: 'Theoden',
-        queen: 'Eowyn'
-    },
-    clubs: {
-        ace: 'Saruman',
-        king: 'Thranduil',
-        queen: 'Galadriel'
-    },
-    spades: {
-        ace: 'Sauron',
-        king: 'Witchking',
-        queen: 'Berúthiel'
-    }
-};
-
 // ===== GAME STATE =====
 let gameState = {
     difficulty: 'easy',
@@ -62,14 +32,47 @@ let gameState = {
 };
 
 // ===== INITIALIZATION =====
-document.getElementById('startBtn').addEventListener('click', startGame);
-document.getElementById('nextRoundBtn').addEventListener('click', nextRound);
-document.getElementById('backToMenuBtn').addEventListener('click', backToMenu);
-document.getElementById('endGameBtn').addEventListener('click', confirmEndGame);
-document.getElementById('toggleHistory').addEventListener('click', toggleHistory);
-document.getElementById('drawFromDeck').addEventListener('click', drawFromDeck);
-document.getElementById('drawFromDiscard').addEventListener('click', drawFromDiscard);
-document.getElementById('knockBtn').addEventListener('click', playerKnock);
+window.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('startBtn');
+    if (startBtn) {
+        startBtn.addEventListener('click', startGame);
+    }
+    
+    const nextRoundBtn = document.getElementById('nextRoundBtn');
+    if (nextRoundBtn) {
+        nextRoundBtn.addEventListener('click', nextRound);
+    }
+    
+    const backToMenuBtn = document.getElementById('backToMenuBtn');
+    if (backToMenuBtn) {
+        backToMenuBtn.addEventListener('click', backToMenu);
+    }
+    
+    const endGameBtn = document.getElementById('endGameBtn');
+    if (endGameBtn) {
+        endGameBtn.addEventListener('click', confirmEndGame);
+    }
+    
+    const toggleHistory = document.getElementById('toggleHistory');
+    if (toggleHistory) {
+        toggleHistory.addEventListener('click', toggleHistoryClick);
+    }
+    
+    const drawFromDeck = document.getElementById('drawFromDeck');
+    if (drawFromDeck) {
+        drawFromDeck.addEventListener('click', drawFromDeck);
+    }
+    
+    const drawFromDiscard = document.getElementById('drawFromDiscard');
+    if (drawFromDiscard) {
+        drawFromDiscard.addEventListener('click', drawFromDiscardFn);
+    }
+    
+    const knockBtn = document.getElementById('knockBtn');
+    if (knockBtn) {
+        knockBtn.addEventListener('click', playerKnock);
+    }
+});
 
 // ===== GAME FLOW =====
 function startGame() {
@@ -88,11 +91,8 @@ function startGame() {
 }
 
 function initializeRound() {
-    // Create deck (2 decks for less repetition)
     gameState.deck = createDeck();
     gameState.discard = [];
-    
-    // Deal cards
     gameState.playerCards = [];
     gameState.aiCards = [];
     
@@ -101,7 +101,6 @@ function initializeRound() {
         gameState.aiCards.push(gameState.deck.pop());
     }
     
-    // Start with one card in discard
     gameState.discard.push(gameState.deck.pop());
     
     gameState.isPlayerTurn = true;
@@ -116,23 +115,18 @@ function createDeck() {
     const deck = [];
     const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
     
-    // Create 2 full decks
     for (let deckNum = 0; deckNum < 2; deckNum++) {
         for (const suit of suits) {
-            // Add numbered cards 2-10
             for (let num = 2; num <= 10; num++) {
                 deck.push({ suit, value: num, display: num });
             }
-            // Add face cards
             deck.push({ suit, value: 10, display: 'J' });
             deck.push({ suit, value: 10, display: 'Q' });
             deck.push({ suit, value: 10, display: 'K' });
-            // Add Ace
             deck.push({ suit, value: 11, display: 'A' });
         }
     }
     
-    // Shuffle
     return deck.sort(() => Math.random() - 0.5);
 }
 
@@ -148,7 +142,6 @@ function calculateScore(cards) {
         }
     }
     
-    // Handle busts: if > 31, try to make it work
     while (score > 31 && cards.some(c => c.display === 'A')) {
         score -= 10;
     }
@@ -165,12 +158,10 @@ function drawFromDeck() {
     gameState.currentPlayerRoundScore = calculateScore(gameState.playerCards);
     
     updateUI();
-    
-    // After drawing, player must discard
     showDiscardPrompt();
 }
 
-function drawFromDiscard() {
+function drawFromDiscardFn() {
     if (!gameState.isPlayerTurn || !gameState.gameActive || gameState.discard.length === 0) return;
     
     const card = gameState.discard.pop();
@@ -185,6 +176,7 @@ function showDiscardPrompt() {
     const cards = document.querySelectorAll('.player-hand .playable');
     cards.forEach((card, index) => {
         card.onclick = () => discardCard(index);
+        card.style.cursor = 'pointer';
     });
     
     document.getElementById('gameStatus').textContent = 'Kies kaart om weg te gooien';
@@ -198,16 +190,16 @@ function discardCard(index) {
     
     updateUI();
     
-    // Reset card click handlers
     const cards = document.querySelectorAll('.player-hand .playable');
     cards.forEach(card => {
         card.onclick = null;
+        card.style.cursor = 'default';
     });
     
     gameState.isPlayerTurn = false;
-    document.getElementById('gameStatus').textContent = 'AI is aan het denken...';
+    document.getElementById('gameStatus').textContent = 'AI speelt...';
     
-    setTimeout(aiTurn, 1000);
+    setTimeout(aiTurn, 1500);
 }
 
 function playerKnock() {
@@ -222,29 +214,23 @@ function aiTurn() {
     if (!gameState.gameActive) return;
     
     const difficulty = gameState.difficulty === 'hard';
-    
-    // AI strategy
     let aiScore = gameState.currentAiRoundScore;
     
     if (aiScore < 21) {
-        // Always draw if below 21
         if (gameState.deck.length > 0) {
             gameState.aiCards.push(gameState.deck.pop());
         } else if (gameState.discard.length > 0) {
             gameState.aiCards.push(gameState.discard.pop());
         }
     } else if (aiScore === 31) {
-        // Perfect hand - always knock
         gameState.gameActive = false;
         endRound();
         return;
     } else if (aiScore >= 30 && !difficulty) {
-        // Easy: knock at 30+
         gameState.gameActive = false;
         endRound();
         return;
     } else if (aiScore >= 29 && difficulty) {
-        // Hard: knock at 29+, sometimes take risk
         if (Math.random() > 0.3) {
             gameState.gameActive = false;
             endRound();
@@ -254,7 +240,6 @@ function aiTurn() {
             gameState.aiCards.push(gameState.deck.pop());
         }
     } else {
-        // Keep drawing
         if (gameState.deck.length > 0) {
             gameState.aiCards.push(gameState.deck.pop());
         }
@@ -262,14 +247,12 @@ function aiTurn() {
     
     gameState.currentAiRoundScore = calculateScore(gameState.aiCards);
     
-    // Check for bust
     if (gameState.currentAiRoundScore > 31) {
         gameState.gameActive = false;
         endRound();
         return;
     }
     
-    // Discard random card
     const discardIndex = Math.floor(Math.random() * gameState.aiCards.length);
     gameState.discard.push(gameState.aiCards[discardIndex]);
     gameState.aiCards.splice(discardIndex, 1);
@@ -285,7 +268,6 @@ function endRound() {
     let playerScore = calculateScore(gameState.playerCards);
     let aiScore = calculateScore(gameState.aiCards);
     
-    // Handle busts
     let playerBust = playerScore > 31;
     let aiBust = aiScore > 31;
     
@@ -294,29 +276,28 @@ function endRound() {
     
     if (playerBust && aiBust) {
         winner = 'draw';
-        message = 'Beiden zijn over de 31 gegaan! Gelijkspel deze ronde.';
+        message = 'Beiden zijn over de 31 gegaan! Gelijkspel.';
     } else if (playerBust) {
         winner = 'ai';
-        message = 'Je bent over de 31 gegaan! AI wint deze ronde.';
+        message = 'Je bent over de 31 gegaan! AI wint.';
         gameState.aiScore++;
     } else if (aiBust) {
         winner = 'player';
-        message = 'De AI is over de 31 gegaan! Jij wint deze ronde!';
+        message = 'AI is over de 31 gegaan! Jij wint!';
         gameState.playerScore++;
     } else if (playerScore > aiScore) {
         winner = 'player';
-        message = `Jij hebt ${playerScore} - AI had ${aiScore}. Jij wint!`;
+        message = `Jij: ${playerScore} - AI: ${aiScore}. Jij wint!`;
         gameState.playerScore++;
     } else if (aiScore > playerScore) {
         winner = 'ai';
-        message = `AI had ${aiScore} - Jij had ${playerScore}. AI wint!`;
+        message = `AI: ${aiScore} - Jij: ${playerScore}. AI wint!`;
         gameState.aiScore++;
     } else {
         winner = 'draw';
-        message = `Jullie hadden beide ${playerScore}. Gelijkspel!`;
+        message = `Beide ${playerScore}. Gelijkspel!`;
     }
     
-    // Add to history
     const historyEntry = {
         round: gameState.currentRound,
         playerScore: playerScore,
@@ -326,7 +307,6 @@ function endRound() {
     };
     gameState.gameHistory.push(historyEntry);
     
-    // Show end screen
     document.getElementById('endTitle').textContent = 
         winner === 'player' ? '🏆 JIJ WINT! 🏆' : 
         winner === 'ai' ? '⚔️ AI WINT ⚔️' : 
@@ -344,7 +324,6 @@ function nextRound() {
         initializeRound();
         showScreen('gameScreen');
     } else {
-        // Game over
         showGameOver();
     }
 }
@@ -352,19 +331,18 @@ function nextRound() {
 function showGameOver() {
     let finalMessage = '';
     if (gameState.playerScore > gameState.aiScore) {
-        finalMessage = `🏆 JIJ HEBT GEWONNEN! 🏆\nJij: ${gameState.playerScore} - AI: ${gameState.aiScore}`;
+        finalMessage = `🏆 JIJ HEBT GEWONNEN!\nJij: ${gameState.playerScore} - AI: ${gameState.aiScore}`;
     } else if (gameState.aiScore > gameState.playerScore) {
-        finalMessage = `⚔️ AI HEEFT GEWONNEN ⚔️\nAI: ${gameState.aiScore} - Jij: ${gameState.playerScore}`;
+        finalMessage = `⚔️ AI HAS WON\nAI: ${gameState.aiScore} - Jij: ${gameState.playerScore}`;
     } else {
-        finalMessage = `⚖️ GELIJKSPEL! ⚖️\nJij: ${gameState.playerScore} - AI: ${gameState.aiScore}`;
+        finalMessage = `⚖️ GELIJKSPEL!\nJij: ${gameState.playerScore} - AI: ${gameState.aiScore}`;
     }
     
     document.getElementById('endTitle').textContent = 'SPEL VOORBIJ';
-    document.getElementById('endPlayerScore').parentElement.innerHTML = `<p>EINDSTAND</p><p class="score-big">${gameState.playerScore}</p>`;
+    document.getElementById('endPlayerScore').textContent = gameState.playerScore;
     document.getElementById('endAiScore').textContent = gameState.aiScore;
     document.getElementById('endMessage').textContent = finalMessage;
     document.getElementById('nextRoundBtn').style.display = 'none';
-    document.getElementById('backToMenuBtn').textContent = 'Terug naar Menu';
     
     showScreen('endScreen');
 }
@@ -377,27 +355,31 @@ function confirmEndGame() {
 
 function backToMenu() {
     document.getElementById('nextRoundBtn').style.display = 'block';
+    gameState.playerScore = 0;
+    gameState.aiScore = 0;
+    gameState.gameHistory = [];
     showScreen('startScreen');
 }
 
 // ===== UI UPDATES =====
 function updateUI() {
-    // Update scores
     document.getElementById('playerScore').textContent = gameState.playerScore;
     document.getElementById('aiScore').textContent = gameState.aiScore;
     document.getElementById('currentRound').textContent = gameState.currentRound;
     document.getElementById('totalRounds').textContent = gameState.totalRounds;
-    document.getElementById('playerRoundScore').textContent = 
-        gameState.currentPlayerRoundScore + (gameState.currentPlayerRoundScore > 31 ? ' (OVER!)' : '');
+    
+    const playerRoundScoreEl = document.getElementById('playerRoundScore');
+    if (playerRoundScoreEl) {
+        playerRoundScoreEl.textContent = 
+            gameState.currentPlayerRoundScore + (gameState.currentPlayerRoundScore > 31 ? ' (OVER!)' : '');
+    }
+    
     document.getElementById('gameStatus').textContent = 
         gameState.isPlayerTurn ? 'Jouw beurt' : 'AI speelt...';
     document.getElementById('deckCount').textContent = gameState.deck.length;
     
-    // Update player hand
     updateHandDisplay('player');
     updateHandDisplay('ai');
-    
-    // Update discard pile
     updateDiscardDisplay();
 }
 
@@ -406,6 +388,8 @@ function updateHandDisplay(player) {
     const container = player === 'player' ? 
         document.querySelector('.player-hand') : 
         document.querySelector('.ai-hand');
+    
+    if (!container) return;
     
     container.innerHTML = '';
     
@@ -432,6 +416,8 @@ function updateHandDisplay(player) {
 
 function updateDiscardDisplay() {
     const discardPile = document.getElementById('discardPile');
+    if (!discardPile) return;
+    
     if (gameState.discard.length > 0) {
         const topCard = gameState.discard[gameState.discard.length - 1];
         discardPile.innerHTML = `<div class="card-inner">${topCard.display}${SUITS[topCard.suit]}</div>`;
@@ -441,7 +427,7 @@ function updateDiscardDisplay() {
     }
 }
 
-function toggleHistory() {
+function toggleHistoryClick() {
     const content = document.getElementById('historyContent');
     const btn = document.getElementById('toggleHistory');
     
@@ -472,8 +458,8 @@ function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
-    document.getElementById(screenId).classList.add('active');
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+    }
 }
-
-// Initial
-showScreen('startScreen');
